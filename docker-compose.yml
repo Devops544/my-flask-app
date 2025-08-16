@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    container_name: flask_app
+    networks:
+      - webnet
+    expose:
+      - "5000"
+
+  nginx:
+    image: nginx:stable
+    container_name: nginx_proxy
+    depends_on:
+      - web
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
+
+
