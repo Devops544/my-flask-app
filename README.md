@@ -29,9 +29,9 @@ ubuntu — Deployment environment
 
 my-flask-app/
 
-├── app.py                                    Flask application
-├── requirements.txt                          Python dependencies
-├── Dockerfile                            Build instructions for Flask app
-├── docker-compose.yml                       Multi-container configuration
+├── app.py                                   
+├── requirements.txt                      
+├── Dockerfile                            
+├── docker-compose.yml                       
 └── nginx/
-└── default.conf                                 Nginx configuration
+└── default.conf                                
