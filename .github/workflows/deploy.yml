@@ -1,0 +1,52 @@
+name: Deploy Flask App to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2 via SSH
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+          KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          # Save the private key
+          printf "%s" "$KEY" > deploy_key
+          chmod 600 deploy_key
+
+          # Connect and deploy
+          ssh -o StrictHostKeyChecking=no -i deploy_key $USER@$HOST << 'EOF'
+            set -e
+            cd /home/ubuntu/my-flask-app
+
+            echo "📦 Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "🐍 Setting up virtual environment..."
+            if [ ! -d venv ]; then
+              python3 -m venv venv
+            fi
+            source venv/bin/activate
+            pip install --upgrade pip
+            if [ -f requirements.txt ]; then
+              pip install -r requirements.txt
+            fi
+            deactivate
+
+            echo "🚀 Restarting Flask service..."
+            sudo systemctl restart myflask.service
+            sudo systemctl status myflask.service --no-pager || true
+          EOF
+
+          # Clean up key
+          rm -f deploy_key
